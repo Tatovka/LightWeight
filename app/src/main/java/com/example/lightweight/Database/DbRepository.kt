@@ -31,6 +31,16 @@ class ResultsRepo(val dao: DayDAO) {
         dao.insertNewApproach(approachEntity)
     }
 
+    suspend fun getAllExResults(exId: Long) =
+        withContext(Dispatchers.IO) {
+            dao.getAllExResults(exId)
+        }
+
+    suspend fun getBestApproach(resId: Long) =
+        withContext(Dispatchers.IO) {
+            dao.getApproaches(resId).maxBy { it.firstResult }
+        }
+
 }
 
 class ExerciseRepo(val dao: ExerciseDAO) {

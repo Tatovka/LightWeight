@@ -19,24 +19,24 @@ import com.example.lightweight.LwApplication
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.sql.Date
-import java.time.Clock
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
 
 sealed interface TrainResultUiState {
-    object Loading : TrainResultUiState
-    object Error : TrainResultUiState
+    data object Loading : TrainResultUiState
+    data object Error : TrainResultUiState
     data class Success(val results: List<ResultEntity>) : TrainResultUiState
 }
 
 sealed interface OpenedDialog {
-    object None : OpenedDialog
-    object AddExercise : OpenedDialog
-    object AddResult : OpenedDialog
+    data object None : OpenedDialog
+    data object AddExercise : OpenedDialog
+    data object AddResult : OpenedDialog
     data class AddApproach(val resId: Long, val ex: ExerciseEntity) : OpenedDialog
     data class Comment(val comment: String) : OpenedDialog
-    object DatePicker : OpenedDialog
+    data object DatePicker : OpenedDialog
+    data class ChartBuilder(val exercises: List<ExerciseEntity>, val buildChart: (Long) -> Unit) : OpenedDialog
+    data class Chart(val results: List<Int>) : OpenedDialog
 }
 
 class TrainResultViewModel(val resRepo: ResultsRepo, val exRepo: ExerciseRepo) : ViewModel() {
@@ -57,13 +57,13 @@ class TrainResultViewModel(val resRepo: ResultsRepo, val exRepo: ExerciseRepo) :
         loadDayResults()
     }
 
-    fun loadExercises() {
+    private fun loadExercises() {
         viewModelScope.launch {
             exMap = exRepo.getAll()
         }
     }
 
-    fun loadApproaches(results: List<ResultEntity>) {
+    private fun loadApproaches(results: List<ResultEntity>) {
         viewModelScope.launch {
             val approaches = ConcurrentHashMap<Long, List<ApproachEntity>>()
             val allAp = resRepo.getAllApproaches()
@@ -109,7 +109,6 @@ class TrainResultViewModel(val resRepo: ResultsRepo, val exRepo: ExerciseRepo) :
                 )
                 approachMap[resId] = approachMap[resId]!! + entity
                 loadDayResults()
-                //updateUi = !updateUi
             }
     }
 
@@ -132,23 +131,35 @@ class TrainResultViewModel(val resRepo: ResultsRepo, val exRepo: ExerciseRepo) :
 
     fun Date() = Date(date)
 
-    fun OpenAddExerciseDialog() {
+    fun openAddExerciseDialog() {
         dialogOpened = OpenedDialog.AddExercise
     }
 
-    fun OpenAddResultDialog() {
+    fun openAddResultDialog() {
         dialogOpened = OpenedDialog.AddResult
     }
 
-    fun OpenAddApproachDialog(id: Long, ex: ExerciseEntity) {
+    fun openAddApproachDialog(id: Long, ex: ExerciseEntity) {
         dialogOpened = OpenedDialog.AddApproach(id, ex)
     }
 
-    fun OpenedCommentDialog(comment: String) {
+    fun openCommentDialog(comment: String) {
         dialogOpened = OpenedDialog.Comment(comment)
     }
 
-    fun OpenCalendar() {
+    fun openChartBuilderDialog() {
+        dialogOpened = OpenedDialog.ChartBuilder(exMap.values.toList(), {id -> openChartDialog(id)})
+    }
+    
+    fun openChartDialog(exId: Long) {
+        viewModelScope.launch {
+            val results = resRepo.getAllExResults(exId).sortedBy{res: ResultEntity -> res.date}
+            val best = results.map { resRepo.getBestApproach(it.id).firstResult }
+            dialogOpened = OpenedDialog.Chart(best)
+        }
+    }
+
+    fun openCalendar() {
         dialogOpened = OpenedDialog.DatePicker
     }
 
@@ -162,7 +173,7 @@ class TrainResultViewModel(val resRepo: ResultsRepo, val exRepo: ExerciseRepo) :
 
     fun previousDay() = setDay(date - dayOffset)
 
-    fun CloseDialogs() {
+    fun closeDialogs() {
         dialogOpened = OpenedDialog.None
     }
 

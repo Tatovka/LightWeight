@@ -22,6 +22,9 @@ interface DayDAO {
 
     @Query("Select * From approaches")
     fun getAllApproaches(): List<ApproachEntity>
+
+    @Query("Select * From results where ex_id = :exId")
+    fun getAllExResults(exId: Long): List<ResultEntity>
 }
 
 @Dao

@@ -3,19 +3,23 @@
 
 package com.example.lightweight.DayScreen
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,12 +33,19 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.lightweight.Database.ExerciseEntity
+import com.example.lightweight.charts.ExerciseStat
 
 @Composable
 fun AddDialog(
@@ -46,32 +57,20 @@ fun AddDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .wrapContentSize()
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
-            Column {
+            Column(
+                Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 content()
-                Row {
-                    TextButton(
-                        onClick = onConfirmation,
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    ) {
-                        Text(
-                            text = "confirm"
-                        )
-                    }
-
-                    TextButton(
-                        onClick = onDismissRequest,
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    ) {
-                        Text(
-                            text = "dismiss"
-                        )
-                    }
+                Button(
+                    onClick = onConfirmation,
+                ) {
+                    Text("Ok")
                 }
-
             }
         }
     }
@@ -93,7 +92,13 @@ fun AddResultDialog(
                 onConfirmation(exercises[chosenIndex].id)
         },
     ) {
-        ExercisesDropDown(exercises, modelView::OpenAddExerciseDialog, chosenIndex)
+        Text(
+            "Add result",
+            Modifier.fillMaxWidth().padding(4.dp),
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold
+        )
+        ExercisesDropDown(exercises, modelView::openAddExerciseDialog, chosenIndex)
         { index -> chosenIndex = index }
     }
 }
@@ -103,37 +108,54 @@ fun ExercisesDropDown(
     exercises: List<ExerciseEntity>,
     openAddExDialog: () -> Unit,
     chosenIndex: Int,
-    choose: (Int) -> Unit
+    selector: (Int) -> Unit,
 ) {
     var expanded: Boolean by remember { mutableStateOf(false) }
     val dismissRequest = { expanded = false }
 
-    if (exercises.isEmpty())
-        TextButton(
-            onClick = openAddExDialog,
-        ) { Text("+") }
-    else {
-        TextButton(onClick = { expanded = !expanded }) {
-            Text(
-                text = exercises[chosenIndex].name
-            )
-        }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = dismissRequest
-        ) {
-            exercises.forEachIndexed { ind, ex ->
-                DropdownMenuItem(
-                    text = { Text(ex.name) },
-                    onClick = {
-                        choose(ind)
-                        dismissRequest()
-                    })
+    Box {
+        if (exercises.isEmpty())
+            TextButton(
+                onClick = openAddExDialog,
+            ) { Text("+") }
+        else {
+            TextButton(onClick = { expanded = !expanded }) {
+                Text(
+                    text = exercises[chosenIndex].name
+                )
             }
-            DropdownMenuItem(
-                text = { Text("+") },
-                onClick = openAddExDialog
-            )
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = dismissRequest,
+                offset = DpOffset.Zero
+            ) {
+                exercises.forEachIndexed { ind, ex ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                ex.name,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        },
+                        onClick = {
+                            selector(ind)
+                            dismissRequest()
+                        },
+                    )
+                }
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            "+",
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    },
+                    onClick = openAddExDialog,
+                )
+            }
         }
     }
 }
@@ -153,10 +175,18 @@ fun AddApproachDialog(
         onConfirmation = {
             val r1 = res1.text.toIntOrNull()
             val r2 = res2.text.toIntOrNull()
-            if(r1 != null && (r2 != null || exercise.unit2 == null))
-            onConfirmation(r1, r2 ?: 0, comment.text)
+            if (r1 != null && (r2 != null || exercise.unit2 == null))
+                onConfirmation(r1, r2 ?: 0, comment.text)
         },
     ) {
+        Text(
+            "Add approach",
+            Modifier
+                .fillMaxWidth()
+                .padding(4.dp),
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold
+        )
         Row {
             OutlinedTextField(
                 value = res1,
@@ -215,31 +245,43 @@ fun AddExerciseDialog(
                 onConfirmation(name.text, unit.text, unit2.text)
         },
     ) {
+        Text(
+            "Add exercise",
+            Modifier
+                .fillMaxWidth()
+                .padding(4.dp),
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold
+        )
+        OutlinedTextField(
+            value = name,
+            onValueChange = { value -> name = value },
+            label = { Text("name") },
+            modifier = Modifier
+                .width(200.dp)
+                .padding(8.dp),
+            singleLine = true
+        )
         Row {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { value -> name = value },
-                label = { Text("name") },
-                modifier = Modifier
-                    .width(100.dp)
-                    .padding(8.dp)
-            )
             OutlinedTextField(
                 value = unit,
                 onValueChange = { value -> unit = value },
                 label = { Text("unit") },
                 modifier = Modifier
                     .width(100.dp)
-                    .padding(8.dp)
+                    .padding(8.dp),
+                singleLine = true
             )
             OutlinedTextField(
                 value = unit2,
                 onValueChange = { value -> unit2 = value },
-                label = { Text("unit2(opt.)") },
+                label = { Text("unit2") },
                 modifier = Modifier
                     .width(100.dp)
-                    .padding(8.dp)
+                    .padding(8.dp),
+                singleLine = true
             )
+
         }
     }
 
@@ -247,15 +289,21 @@ fun AddExerciseDialog(
 
 @Composable
 fun CommentDialog(comment: String, onDismissRequest: () -> Unit) {
-    Dialog(onDismissRequest = { onDismissRequest() }) {
+    Dialog(onDismissRequest = onDismissRequest) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
-                .padding(16.dp),
+                .wrapContentHeight(Alignment.CenterVertically),
             shape = RoundedCornerShape(16.dp),
         ) {
-            Text(comment)
+            Text(
+                comment,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                fontSize = TextUnit(24f, TextUnitType.Sp),
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }
@@ -267,14 +315,66 @@ fun PickDateDialog(srcDate: Long, onDismissRequest: () -> Unit, onConfirmation: 
     pickerState.selectedDateMillis = srcDate
     DatePickerDialog(
         onDismissRequest = onDismissRequest,
-        confirmButton = { TextButton(onClick = {
-            if (pickerState.selectedDateMillis != null)
-                onConfirmation(pickerState.selectedDateMillis!!)
-        }){ Text("ok") } },
-        dismissButton = { TextButton(onClick = onDismissRequest){ Text("cancel") } },
+        confirmButton = {
+            TextButton(onClick = {
+                if (pickerState.selectedDateMillis != null)
+                    onConfirmation(pickerState.selectedDateMillis!!)
+            }) { Text("ok") }
+        },
+        dismissButton = { TextButton(onClick = onDismissRequest) { Text("cancel") } },
     ) {
         DatePicker(
             state = pickerState,
         )
+    }
+}
+
+@Composable
+fun ChartBuilderDialog(
+    builder: OpenedDialog.ChartBuilder,
+    openAddExerciseDialog: () -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    var chosenIndex by remember { mutableIntStateOf(0) }
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.6f)
+                .wrapContentHeight(Alignment.CenterVertically),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    "Statistic by",
+                    Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold
+                )
+                ExercisesDropDown(
+                    builder.exercises,
+                    openAddExerciseDialog,
+                    chosenIndex
+                )
+                { ind -> chosenIndex = ind }
+
+                Button(
+                    onClick = { builder.buildChart(builder.exercises[chosenIndex].id) },
+                ) {
+                    Text("Show")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ChartDialog(values: List<Int>, onDismissRequest: () -> Unit) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        ExerciseStat(values)
     }
 }
