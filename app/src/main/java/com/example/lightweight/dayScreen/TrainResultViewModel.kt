@@ -1,4 +1,4 @@
-package com.example.lightweight.DayScreen
+package com.example.lightweight.dayScreen
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -10,11 +10,11 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.lightweight.Database.ApproachEntity
-import com.example.lightweight.Database.ExerciseEntity
-import com.example.lightweight.Database.ExerciseRepo
-import com.example.lightweight.Database.ResultEntity
-import com.example.lightweight.Database.ResultsRepo
+import com.example.lightweight.database.ApproachEntity
+import com.example.lightweight.database.ExerciseEntity
+import com.example.lightweight.database.ExerciseRepo
+import com.example.lightweight.database.ResultEntity
+import com.example.lightweight.database.ResultsRepo
 import com.example.lightweight.LwApplication
 import kotlinx.coroutines.launch
 import java.io.IOException

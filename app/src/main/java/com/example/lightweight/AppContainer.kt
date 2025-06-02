@@ -2,9 +2,9 @@ package com.example.lightweight
 
 import android.content.Context
 import androidx.room.Room
-import com.example.lightweight.Database.ExerciseRepo
-import com.example.lightweight.Database.LwDatabase
-import com.example.lightweight.Database.ResultsRepo
+import com.example.lightweight.database.ExerciseRepo
+import com.example.lightweight.database.LwDatabase
+import com.example.lightweight.database.ResultsRepo
 
 
 

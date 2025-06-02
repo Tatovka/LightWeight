@@ -1,7 +1,7 @@
 package com.example.lightweight
 
-import com.example.lightweight.Database.ExerciseDAO
-import com.example.lightweight.Database.ExerciseEntity
+import com.example.lightweight.database.ExerciseDAO
+import com.example.lightweight.database.ExerciseEntity
 
 class FakeExDao : ExerciseDAO {
     var exList = listOf(FakeData.sampleEx)

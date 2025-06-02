@@ -1,6 +1,5 @@
-package com.example.lightweight.Database
+package com.example.lightweight.database
 
-import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query

@@ -5,16 +5,11 @@ package com.example.lightweight
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -28,23 +23,22 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import com.example.lightweight.DayScreen.TrainResultViewModel
+import com.example.lightweight.dayScreen.TrainResultViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.lightweight.DayScreen.AddApproachDialog
-import com.example.lightweight.DayScreen.AddExerciseDialog
-import com.example.lightweight.DayScreen.AddResultDialog
-import com.example.lightweight.DayScreen.ChartBuilderDialog
-import com.example.lightweight.DayScreen.ChartDialog
-import com.example.lightweight.DayScreen.CommentDialog
-import com.example.lightweight.DayScreen.DayScreen
-import com.example.lightweight.DayScreen.OpenedDialog
-import com.example.lightweight.DayScreen.PickDateDialog
+import com.example.lightweight.dayScreen.AddApproachDialog
+import com.example.lightweight.dayScreen.AddExerciseDialog
+import com.example.lightweight.dayScreen.AddResultDialog
+import com.example.lightweight.dayScreen.ChartBuilderDialog
+import com.example.lightweight.dayScreen.ChartDialog
+import com.example.lightweight.dayScreen.CommentDialog
+import com.example.lightweight.dayScreen.DayScreen
+import com.example.lightweight.dayScreen.OpenedDialog
+import com.example.lightweight.dayScreen.PickDateDialog
 
 @Composable
 fun DayWindow() {

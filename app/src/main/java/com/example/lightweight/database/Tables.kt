@@ -1,4 +1,4 @@
-package com.example.lightweight.Database
+package com.example.lightweight.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
