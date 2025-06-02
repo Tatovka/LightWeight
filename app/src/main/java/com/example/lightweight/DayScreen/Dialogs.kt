@@ -79,36 +79,44 @@ fun AddDialog(
 
 @Composable
 fun AddResultDialog(
-    exercises: List<ExerciseEntity>,
+    openedDialog: OpenedDialog.AddResult,
     onDismissRequest: () -> Unit,
-    onConfirmation: (Long) -> Unit,
-    modelView: TrainResultViewModel
 ) {
     var chosenIndex by remember { mutableIntStateOf(0) }
     AddDialog(
         onDismissRequest = onDismissRequest,
         onConfirmation = {
-            if (exercises.isNotEmpty())
-                onConfirmation(exercises[chosenIndex].id)
+            if (openedDialog.exercises.isNotEmpty()) {
+                openedDialog.onConfirmation(openedDialog.exercises[chosenIndex].id)
+                onDismissRequest()
+            }
         },
     ) {
         Text(
             "Add result",
-            Modifier.fillMaxWidth().padding(4.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(4.dp),
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Bold
         )
-        ExercisesDropDown(exercises, modelView::openAddExerciseDialog, chosenIndex)
-        { index -> chosenIndex = index }
+        ExercisesDropDown(
+            openedDialog.exercises,
+            chosenIndex, { index -> chosenIndex = index },
+            openedDialog.openAddExercise,
+            plusButton = true,
+        )
+
     }
 }
 
 @Composable
 fun ExercisesDropDown(
     exercises: List<ExerciseEntity>,
-    openAddExDialog: () -> Unit,
     chosenIndex: Int,
     selector: (Int) -> Unit,
+    openAddExDialog: () -> Unit = {},
+    plusButton: Boolean = false,
 ) {
     var expanded: Boolean by remember { mutableStateOf(false) }
     val dismissRequest = { expanded = false }
@@ -145,7 +153,7 @@ fun ExercisesDropDown(
                         },
                     )
                 }
-                DropdownMenuItem(
+                if (plusButton) DropdownMenuItem(
                     text = {
                         Text(
                             "+",
@@ -281,7 +289,6 @@ fun AddExerciseDialog(
                     .padding(8.dp),
                 singleLine = true
             )
-
         }
     }
 
@@ -332,7 +339,6 @@ fun PickDateDialog(srcDate: Long, onDismissRequest: () -> Unit, onConfirmation: 
 @Composable
 fun ChartBuilderDialog(
     builder: OpenedDialog.ChartBuilder,
-    openAddExerciseDialog: () -> Unit,
     onDismissRequest: () -> Unit
 ) {
     var chosenIndex by remember { mutableIntStateOf(0) }
@@ -357,13 +363,15 @@ fun ChartBuilderDialog(
                 )
                 ExercisesDropDown(
                     builder.exercises,
-                    openAddExerciseDialog,
-                    chosenIndex
+                    chosenIndex,
+                    { ind -> chosenIndex = ind }
                 )
-                { ind -> chosenIndex = ind }
 
                 Button(
-                    onClick = { builder.buildChart(builder.exercises[chosenIndex].id) },
+                    onClick = {
+                        if (builder.exercises.isNotEmpty())
+                            builder.buildChart(builder.exercises[chosenIndex].id)
+                    },
                 ) {
                     Text("Show")
                 }
@@ -377,4 +385,9 @@ fun ChartDialog(values: List<Int>, onDismissRequest: () -> Unit) {
     Dialog(onDismissRequest = onDismissRequest) {
         ExerciseStat(values)
     }
+}
+
+@Composable
+fun LabelDialog(onDismissRequest: () -> Unit) {
+
 }

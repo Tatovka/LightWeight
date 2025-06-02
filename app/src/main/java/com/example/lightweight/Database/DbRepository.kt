@@ -38,7 +38,7 @@ class ResultsRepo(val dao: DayDAO) {
 
     suspend fun getBestApproach(resId: Long) =
         withContext(Dispatchers.IO) {
-            dao.getApproaches(resId).maxBy { it.firstResult }
+            dao.getApproaches(resId).maxByOrNull { it.firstResult }
         }
 
 }

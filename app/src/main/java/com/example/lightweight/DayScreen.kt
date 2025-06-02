@@ -50,6 +50,7 @@ import com.example.lightweight.DayScreen.PickDateDialog
 fun DayWindow() {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val appViewModel: TrainResultViewModel = viewModel(factory = TrainResultViewModel.Factory)
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -76,13 +77,8 @@ fun DayWindow() {
         val dialog = appViewModel.dialogOpened
         when (dialog) {
             is OpenedDialog.AddResult -> AddResultDialog(
+                dialog,
                 onDismissRequest = appViewModel::closeDialogs,
-                onConfirmation = { exId ->
-                    appViewModel.addResult(exId)
-                    appViewModel.closeDialogs()
-                },
-                exercises = appViewModel.exMap.values.toList(),
-                modelView = appViewModel
             )
 
             is OpenedDialog.AddExercise -> AddExerciseDialog(
@@ -115,7 +111,6 @@ fun DayWindow() {
 
             is OpenedDialog.ChartBuilder -> ChartBuilderDialog(
                 dialog,
-                appViewModel::openAddExerciseDialog,
                 appViewModel::closeDialogs
             )
 

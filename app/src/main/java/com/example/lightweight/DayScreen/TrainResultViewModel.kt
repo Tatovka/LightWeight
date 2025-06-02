@@ -31,11 +31,16 @@ sealed interface TrainResultUiState {
 sealed interface OpenedDialog {
     data object None : OpenedDialog
     data object AddExercise : OpenedDialog
-    data object AddResult : OpenedDialog
+    data class AddResult(
+        val exercises: List<ExerciseEntity>,
+        val onConfirmation: (Long) -> Unit,
+        val openAddExercise: () -> Unit,
+    ) : OpenedDialog
     data class AddApproach(val resId: Long, val ex: ExerciseEntity) : OpenedDialog
     data class Comment(val comment: String) : OpenedDialog
     data object DatePicker : OpenedDialog
-    data class ChartBuilder(val exercises: List<ExerciseEntity>, val buildChart: (Long) -> Unit) : OpenedDialog
+    data class ChartBuilder(val exercises: List<ExerciseEntity>, val buildChart: (Long) -> Unit) :
+        OpenedDialog
     data class Chart(val results: List<Int>) : OpenedDialog
 }
 
@@ -120,6 +125,14 @@ class TrainResultViewModel(val resRepo: ResultsRepo, val exRepo: ExerciseRepo) :
             }
     }
 
+    fun addLabel(text: String) {
+        viewModelScope
+            .launch {
+                resRepo.insertResult(ResultEntity(date = date, exId = -1, planned = 2))
+                loadDayResults()
+            }
+    }
+
     fun addExercise(name: String, unit: String, unit2: String) {
         viewModelScope.launch {
             exRepo.insertExercise(
@@ -136,7 +149,11 @@ class TrainResultViewModel(val resRepo: ResultsRepo, val exRepo: ExerciseRepo) :
     }
 
     fun openAddResultDialog() {
-        dialogOpened = OpenedDialog.AddResult
+        dialogOpened = OpenedDialog.AddResult(
+            exMap.values.toList(),
+            this::addResult,
+            this::openAddExerciseDialog
+        )
     }
 
     fun openAddApproachDialog(id: Long, ex: ExerciseEntity) {
@@ -148,14 +165,18 @@ class TrainResultViewModel(val resRepo: ResultsRepo, val exRepo: ExerciseRepo) :
     }
 
     fun openChartBuilderDialog() {
-        dialogOpened = OpenedDialog.ChartBuilder(exMap.values.toList(), {id -> openChartDialog(id)})
+        dialogOpened =
+            OpenedDialog.ChartBuilder(exMap.values.toList(), { id -> openChartDialog(id) })
     }
-    
+
     fun openChartDialog(exId: Long) {
         viewModelScope.launch {
-            val results = resRepo.getAllExResults(exId).sortedBy{res: ResultEntity -> res.date}
-            val best = results.map { resRepo.getBestApproach(it.id).firstResult }
-            dialogOpened = OpenedDialog.Chart(best)
+            val results = resRepo.getAllExResults(exId).sortedBy { res: ResultEntity -> res.date }
+            val best = results.map {
+                resRepo.getBestApproach(it.id)?.firstResult
+            }.filterNotNull()
+            if (best.isNotEmpty())
+                dialogOpened = OpenedDialog.Chart(best)
         }
     }
 
